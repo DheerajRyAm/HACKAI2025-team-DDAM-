@@ -1,3 +1,9 @@
 flask 
 flask-socketio 
-eventlet
+flask-cors 
+aiortc 
+opencv-python 
+torch 
+torchvision 
+tensorflow 
+numpy
