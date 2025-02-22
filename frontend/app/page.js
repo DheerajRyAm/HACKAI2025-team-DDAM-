@@ -47,20 +47,17 @@ export default function Home() {
 
   // Send frames every 500ms
   useEffect(() => {
-    const interval = setInterval(sendFrameToBackend, 500);
+    const interval = setInterval(sendFrameToBackend, 100);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h1>Dance Game 🎵💃🕺</h1>
-      <video ref={videoRef} autoPlay playsInline width="500"></video>
-      <canvas
-        ref={canvasRef}
-        width="224"
-        height="224"
-        style={{ display: "none" }}
-      ></canvas>
+      <div className="flex place-content-center">
+        <video ref={videoRef} autoPlay playsInline width="500"></video>
+        <canvas ref={canvasRef} width="224" height="224"></canvas>
+      </div>
       <h2 style={{ marginTop: "20px", color: "blue" }}>{gesture}</h2>
     </div>
   );
