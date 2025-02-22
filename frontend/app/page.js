@@ -3,8 +3,12 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const videoRef = useRef(null);
+  const distractingVideoRef = useRef(null);
   const canvasRef = useRef(null);
   const [gesture, setGesture] = useState("Waiting for move...");
+  const [score, setScore] = useState(10);
+  const [highscore, setHighscore] = useState(10);
+  const fps = 60;
 
   useEffect(() => {
     const startVideo = async () => {
@@ -25,7 +29,37 @@ export default function Home() {
     if (!context) return;
 
     // Capture frame
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    context.drawImage(
+      distractingVideoRef.current,
+      0,
+      canvas.height - 300,
+      100,
+      300
+    );
+    context.fillStyle = "red";
+    context.fillRect(
+      window.innerWidth - window.innerWidth / 3,
+      window.innerHeight / 3,
+      100,
+      10
+    );
+    context.fillRect(
+      window.innerWidth - window.innerWidth / 5,
+      window.innerHeight / 3,
+      100,
+      10
+    );
+
+    context.fillStyle = "blue";
+    context.font = "48px serif";
+    context.fillText(`Score: ${score}`, 10, 50);
+
+    context.fillStyle = "green";
+    context.font = "48px serif";
+    context.fillText(`Score: ${highscore}`, 10, 90);
+
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       const formData = new FormData();
@@ -45,20 +79,31 @@ export default function Home() {
     }, "image/jpeg");
   };
 
-  // Send frames every 500ms
+  // Send frames every 100ms
   useEffect(() => {
-    const interval = setInterval(sendFrameToBackend, 100);
+    const interval = setInterval(sendFrameToBackend, 1000 / fps);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <h1>Dance Game 🎵💃🕺</h1>
       <div className="flex place-content-center">
-        <video ref={videoRef} autoPlay playsInline width="500"></video>
-        <canvas ref={canvasRef} width="224" height="224"></canvas>
+        <video
+          ref={distractingVideoRef}
+          src="/erm.mp4"
+          autoPlay
+          playsInline
+          width="100"
+          height="100"
+          hidden
+        ></video>
+        <canvas
+          ref={canvasRef}
+          width={window.innerWidth}
+          height={window.innerHeight}
+        ></canvas>
+        <video hidden ref={videoRef} autoPlay playsInline width="1000"></video>
       </div>
-      <h2 style={{ marginTop: "20px", color: "blue" }}>{gesture}</h2>
     </div>
   );
 }

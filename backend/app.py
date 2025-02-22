@@ -41,7 +41,7 @@ def process_frame():
         detected_gesture = gesture_labels[predicted_class]
         print(f"Detected Move: {detected_gesture}")
 
-        return jsonify({"gesture": detected_gesture})
+        return jsonify({"gesture": "detected_gesture"})
 
     except Exception as e:
         print("Error:", str(e))
