@@ -1,0 +1,31 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dev.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+        - action: rebuild
+          path: requirements.txt
+    restart: always
