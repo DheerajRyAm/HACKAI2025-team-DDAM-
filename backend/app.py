@@ -79,6 +79,7 @@ def process_frame():
             output = eval_model(tensor)
             predicted_class = torch.argmax(output, dim=1).item()
         detected_emotion = emotion_labels.get(predicted_class, "unknown")
+        
         return jsonify({"emotion": detected_emotion})
     except Exception as e:
         print("Error:", str(e))

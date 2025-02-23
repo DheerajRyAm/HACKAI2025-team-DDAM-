@@ -60,6 +60,7 @@ export default function Home() {
         // this section runs when they get it in the allotted time
         console.log(currentEmotion);
         if (currentEmotion == queueItem.emotion) {
+          setScore((score) => score + 1);
           theQueue = theQueue.filter((value) => {
             if (value.id != queueItem.id) {
               return value;
