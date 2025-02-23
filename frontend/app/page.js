@@ -8,7 +8,57 @@ export default function Home() {
   const [gesture, setGesture] = useState("Waiting for move...");
   const [score, setScore] = useState(10);
   const [highscore, setHighscore] = useState(10);
-  const fps = 60;
+  const fps = 30;
+  let emojis = {
+    anger: "😡",
+    happy: "😃",
+    fear: "😱",
+    disgust: "🤢",
+    sad: "😢",
+    suprise: "😲",
+    neutral: "😐",
+  };
+  let start = Math.round(Date.now()) / 1000;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const gameLoop = (timeStamp) => {
+      const deltaTime = (timeStamp - lastTimeRef.current) / 1000;
+      lastTimeRef.current = timeStamp;
+
+      update(deltaTime);
+      draw(ctx);
+
+      requestRef.current = requestAnimationFrame(gameLoop);
+    };
+
+    requestRef.current = requestAnimationFrame(gameLoop);
+
+    return () => cancelAnimationFrame(requestRef.current);
+  }, []);
+
+  function update(deltaTime) {}
+
+  function draw(ctx) {
+    const canvas = ctx.canvas;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const b = ball.current;
+    ctx.fillStyle = "blue";
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  let theQueue = [{ emoji: emojis.anger, startTime: 0 }];
+
+  console.log(Math.floor(Date.now() / 1000));
 
   useEffect(() => {
     const startVideo = async () => {
@@ -28,16 +78,25 @@ export default function Home() {
     const context = canvas.getContext("2d");
     if (!context) return;
 
-    // Capture frame
+    // Clear canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
+    // Capture frame and draw on canvas
     context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    context.font = "90px serif";
+    context.fillText(
+      `${theQueue[0].emoji}`,
+      window.innerWidth - window.innerWidth / 3,
+      0 + Math.floor(Date.now() / 1000)
+    );
+    // draw needed subway surfers gameplay
     context.drawImage(
       distractingVideoRef.current,
       0,
       canvas.height - 300,
-      100,
+      120,
       300
     );
+    // draw line
     context.fillStyle = "red";
     context.fillRect(
       window.innerWidth - window.innerWidth / 3,
@@ -58,7 +117,7 @@ export default function Home() {
 
     context.fillStyle = "green";
     context.font = "48px serif";
-    context.fillText(`Score: ${highscore}`, 10, 90);
+    context.fillText(`Highscore: ${highscore}`, 10, 90);
 
     canvas.toBlob(async (blob) => {
       if (!blob) return;
@@ -81,19 +140,19 @@ export default function Home() {
 
   // Send frames every 100ms
   useEffect(() => {
-    const interval = setInterval(sendFrameToBackend, 1000 / fps);
-    return () => clearInterval(interval);
+    const gameLoop = setInterval(sendFrameToBackend, 1000 / fps);
+    return () => clearInterval(gameLoop);
   }, []);
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
+    <div>
       <div className="flex place-content-center">
         <video
           ref={distractingVideoRef}
           src="/erm.mp4"
           autoPlay
           playsInline
-          width="100"
+          width="120"
           height="100"
           hidden
         ></video>
