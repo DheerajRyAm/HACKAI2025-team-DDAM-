@@ -17,7 +17,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Global game state variables for a single-player game
 game_status = False
 current_score = 0
-high_score = 0
 num_correct = 0
 combo = 5
 current_emotion = None
@@ -25,11 +24,10 @@ current_gesture = None
 
 # Define possible emotions and gestures
 emotion = ["angry", "disgust", "fear", "happy", "neutral", "sad", "suprise"]
-gesture = ["plam", "I", "fist", "thumb", "ok", "c", "down"]
 
 # Dummy AI model and label mapping (replace with your actual model)
-pytorch_model = lambda x: torch.randn(1, len(gesture))
-gesture_labels = {i: label for i, label in enumerate(gesture)}
+pytorch_model = lambda x: torch.randn(1, len(emotion))
+emotion_labels = {i: label for i, label in enumerate(emotion)}
 
 # Image preprocessing for the AI model
 transform = transforms.Compose([
@@ -39,28 +37,31 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
 ])
-def load_model(model_path):
-    """Load the pre-trained model from the given path."""
-    return tf.keras.models.load_model(model_path)
+# def load_model(model_path):
+#     """Load the pre-trained model from the given path."""
+#     return tf.keras.models.load_model(model_path)
 
-def preprocess_image(img_path, target_size=(224, 224)):
-    """Load and preprocess the image for the model."""
-    img = image.load_img(img_path, target_size=target_size)
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array /= 255.0  # Normalize the image
-    return img_array
+# def preprocess_image(img_path, target_size=(224, 224)):
+#     """Load and preprocess the image for the model."""
+#     img = image.load_img(img_path, target_size=target_size)
+#     img_array = image.img_to_array(img)
+#     img_array = np.expand_dims(img_array, axis=0)
+#     img_array /= 255.0  # Normalize the image
+#     return img_array
 
-def predict_emotion(model, img_path, class_labels):
-    """Predict the emotion of the given image using the loaded model."""
-    img_array = preprocess_image(img_path)
-    predictions = model.predict(img_array)
-    predicted_class = np.argmax(predictions)
-    return class_labels[predicted_class]
+# def predict_emotion(model, img_path, class_labels):
+#     """Predict the emotion of the given image using the loaded model."""
+#     img_array = preprocess_image(img_path)
+#     predictions = model.predict(img_array)
+#     predicted_class = np.argmax(predictions)
+#     return class_labels[predicted_class]
+
+def pytorch_model(x):
+    return torch.randn(1, len(emotion))
 
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
-    """Receives a video frame, processes it, and returns the detected gesture."""
+    """Receives a video frame, processes it, and returns the detected emotion."""
     try:
         file = request.files['frame']
         frame = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
@@ -71,9 +72,9 @@ def process_frame():
         with torch.no_grad():
             output = pytorch_model(tensor)
             predicted_class = torch.argmax(output, dim=1).item()
-        detected_gesture = gesture_labels.get(predicted_class, "unknown")
-        print(f"Detected Move: {detected_gesture}")
-        return jsonify({"gesture": detected_gesture})
+        detected_emotion = emotion_labels.get(predicted_class, "unknown")
+        print(f"Detected Move: {detected_emotion}")
+        return jsonify({"emotion": detected_emotion})
     except Exception as e:
         print("Error:", str(e))
         return jsonify({"error": str(e)})
